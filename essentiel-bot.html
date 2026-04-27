@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Essentiel Bot</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #060b14;
+  --surface: #0c1525;
+  --card: #0f1d35;
+  --card2: #111f38;
+  --border: rgba(99,179,255,0.12);
+  --primary: #63b3ff;
+  --secondary: #a78bff;
+  --accent: #38f5c8;
+  --gold: #f5c842;
+  --text: #e8f0fb;
+  --muted: #7a94b8;
+  --glow: rgba(99,179,255,0.18);
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  overflow-x: hidden;
+}
+
+/* ── CANVAS STARS ── */
+#stars {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── NOISE OVERLAY ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.6;
+}
+
+/* ── ORBS ── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  filter: blur(100px);
+  pointer-events: none;
+  z-index: 0;
+  animation: floatOrb 12s ease-in-out infinite;
+}
+.orb1 { width: 500px; height: 500px; background: rgba(99,179,255,0.07); top: -150px; left: -100px; animation-delay: 0s; }
+.orb2 { width: 400px; height: 400px; background: rgba(167,139,255,0.07); bottom: 10%; right: -100px; animation-delay: -6s; }
+.orb3 { width: 300px; height: 300px; background: rgba(56,245,200,0.05); top: 50%; left: 40%; animation-delay: -3s; }
+
+@keyframes floatOrb {
+  0%,100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-30px) scale(1.05); }
+}
+
+/* ── NAV ── */
+nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 40px;
+  background: rgba(6,11,20,0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-icon {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  box-shadow: 0 0 18px rgba(99,179,255,0.4);
+}
+
+.logo-text {
+  font-family: 'Cinzel', serif;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  list-style: none;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: color 0.25s;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -4px;
+  width: 0; height: 1px;
+  background: var(--primary);
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover { color: var(--primary); }
+.nav-links a:hover::after { width: 100%; }
+
+.nav-cta {
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  color: #fff !important;
+  padding: 9px 20px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+.nav-cta:hover { box-shadow: 0 0 20px rgba(99,179,255,0.5); transform: translateY(-1px); }
+.nav-cta::after { display: none !important; }
+
+/* ── HERO ── */
+.hero {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 120px 20px 80px;
+}
+
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(99,179,255,0.08);
+  border: 1px solid rgba(99,179,255,0.2);
+  border-radius: 30px;
+  padding: 6px 18px;
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 500;
+  margin-bottom: 28px;
+  animation: fadeDown 0.8s ease both;
+}
+
+.hero-badge::before { content: '✦'; font-size: 10px; }
+
+.hero h1 {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(42px, 8vw, 90px);
+  font-weight: 900;
+  line-height: 1.05;
+  margin-bottom: 22px;
+  animation: fadeDown 0.9s ease both 0.1s;
+}
+
+.hero h1 span {
+  display: block;
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 50%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  color: transparent;
+  background-size: 200% 200%;
+  animation: shiftGrad 5s ease infinite;
+}
+
+@keyframes shiftGrad {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.hero p {
+  font-size: clamp(15px, 2.5vw, 20px);
+  color: var(--muted);
+  max-width: 540px;
+  line-height: 1.7;
+  margin-bottom: 40px;
+  animation: fadeDown 1s ease both 0.2s;
+}
+
+.hero-buttons {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  animation: fadeDown 1s ease both 0.3s;
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 30px;
+  border-radius: 30px;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  transition: 0.25s;
+  box-shadow: 0 8px 30px rgba(99,179,255,0.3);
+}
+
+.btn-primary:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 40px rgba(99,179,255,0.45);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 30px;
+  border-radius: 30px;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  transition: 0.25s;
+}
+
+.btn-secondary:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+  background: rgba(99,179,255,0.06);
+}
+
+/* stats row */
+.hero-stats {
+  display: flex;
+  gap: 40px;
+  margin-top: 70px;
+  animation: fadeUp 1s ease both 0.5s;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat {
+  text-align: center;
+}
+
+.stat-num {
+  font-family: 'Cinzel', serif;
+  font-size: 28px;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--primary), var(--accent));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.stat-label {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* divider */
+.hero-divider {
+  width: 1px;
+  height: 40px;
+  background: var(--border);
+}
+
+/* ── SECTION WRAPPER ── */
+.section {
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 80px 24px;
+}
+
+.section-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+  margin-bottom: 14px;
+}
+
+.section-label::before {
+  content: '';
+  display: block;
+  width: 24px;
+  height: 1px;
+  background: var(--primary);
+}
+
+.section-title {
+  font-family: 'Cinzel', serif;
+  font-size: clamp(24px, 4vw, 40px);
+  font-weight: 700;
+  margin-bottom: 14px;
+  line-height: 1.2;
+}
+
+.section-sub {
+  color: var(--muted);
+  font-size: 16px;
+  max-width: 520px;
+  line-height: 1.65;
+  margin-bottom: 48px;
+}
+
+/* ── FEATURES ── */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+}
+
+.feature-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 28px 24px;
+  position: relative;
+  overflow: hidden;
+  transition: 0.3s ease;
+  cursor: default;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99,179,255,0.05), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.feature-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(99,179,255,0.35);
+  box-shadow: 0 20px 50px rgba(0,0,0,0.3), 0 0 30px rgba(99,179,255,0.06);
+}
+
+.feature-card:hover::before { opacity: 1; }
+
+.feature-icon {
+  font-size: 36px;
+  margin-bottom: 16px;
+  display: block;
+  filter: drop-shadow(0 0 10px rgba(99,179,255,0.3));
+}
+
+.feature-card h3 {
+  font-size: 17px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  font-family: 'Cinzel', serif;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.feature-badge {
+  position: absolute;
+  top: 18px; right: 18px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(56,245,200,0.12);
+  color: var(--accent);
+  border: 1px solid rgba(56,245,200,0.25);
+}
+
+/* ── COMMANDS ── */
+.commands-wrapper {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.cmd-group {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 24px;
+  transition: 0.3s;
+}
+
+.cmd-group:hover {
+  border-color: rgba(99,179,255,0.3);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.cmd-group-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.cmd-group-icon {
+  font-size: 22px;
+}
+
+.cmd-group-title {
+  font-family: 'Cinzel', serif;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.cmd-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.cmd-tag {
+  display: inline-block;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: rgba(99,179,255,0.08);
+  border: 1px solid rgba(99,179,255,0.15);
+  font-size: 13px;
+  color: var(--primary);
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  transition: 0.2s;
+  cursor: default;
+}
+
+.cmd-tag:hover {
+  background: rgba(99,179,255,0.18);
+  border-color: rgba(99,179,255,0.4);
+  transform: scale(1.04);
+}
+
+.cmd-tag.eco {
+  background: rgba(245,200,66,0.08);
+  border-color: rgba(245,200,66,0.2);
+  color: var(--gold);
+}
+
+.cmd-tag.eco:hover {
+  background: rgba(245,200,66,0.16);
+}
+
+/* ── UPDATES ── */
+.updates-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+
+.updates-timeline::before {
+  content: '';
+  position: absolute;
+  left: 24px;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--primary), var(--secondary), transparent);
+}
+
+.update-card {
+  position: relative;
+  padding: 0 0 36px 68px;
+}
+
+.update-card:last-child { padding-bottom: 0; }
+
+.update-dot {
+  position: absolute;
+  left: 14px;
+  top: 22px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  box-shadow: 0 0 16px rgba(99,179,255,0.5);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+}
+
+.update-inner {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 26px 28px;
+  transition: 0.3s;
+}
+
+.update-card:hover .update-inner {
+  border-color: rgba(99,179,255,0.35);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+}
+
+.update-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.update-version {
+  font-family: 'Cinzel', serif;
+  font-size: 18px;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.update-date {
+  font-size: 12px;
+  color: var(--muted);
+  padding: 3px 10px;
+  background: rgba(255,255,255,0.04);
+  border-radius: 20px;
+}
+
+.update-subtitle {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--text);
+}
+
+.update-desc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.update-changes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.update-change {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.update-change-icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.update-commands-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.update-hint {
+  margin-top: 14px;
+  padding: 10px 14px;
+  background: rgba(167,139,255,0.07);
+  border: 1px solid rgba(167,139,255,0.18);
+  border-radius: 10px;
+  font-size: 13px;
+  color: var(--secondary);
+  font-style: italic;
+}
+
+/* v0.1 */
+.update-card.v01 .update-dot { background: linear-gradient(135deg, #7a94b8, #4a6080); box-shadow: none; }
+.update-card.v01 .update-version { background: linear-gradient(90deg, #7a94b8, #4a6080); -webkit-background-clip: text; }
+
+/* coming soon */
+.update-card.coming .update-dot {
+  background: linear-gradient(135deg, var(--accent), #00c4a7);
+  box-shadow: 0 0 16px rgba(56,245,200,0.4);
+}
+.update-card.coming .update-version {
+  background: linear-gradient(90deg, var(--accent), #00c4a7);
+  -webkit-background-clip: text;
+}
+
+/* ── SUPPORT ── */
+.support-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 40px;
+  display: flex;
+  align-items: center;
+  gap: 30px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.support-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99,179,255,0.04), rgba(167,139,255,0.04));
+}
+
+.support-icon {
+  font-size: 56px;
+  filter: drop-shadow(0 0 20px rgba(99,179,255,0.3));
+  flex-shrink: 0;
+}
+
+.support-content h3 {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.support-content p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 420px;
+}
+
+.support-btn {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 30px;
+  background: #5865F2;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 15px;
+  transition: 0.25s;
+  box-shadow: 0 8px 28px rgba(88,101,242,0.35);
+  white-space: nowrap;
+}
+
+.support-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px rgba(88,101,242,0.5);
+}
+
+/* ── SEPARATOR ── */
+.sep {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border), transparent);
+  margin: 0 24px;
+}
+
+/* ── FOOTER ── */
+footer {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 40px 20px 30px;
+}
+
+.footer-logo {
+  font-family: 'Cinzel', serif;
+  font-size: 22px;
+  font-weight: 700;
+  background: linear-gradient(90deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  color: transparent;
+  margin-bottom: 14px;
+}
+
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 28px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.footer-links a {
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 13px;
+  transition: color 0.2s;
+}
+
+.footer-links a:hover { color: var(--primary); }
+
+.footer-copy {
+  font-size: 12px;
+  color: var(--muted);
+  opacity: 0.7;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeDown {
+  from { opacity: 0; transform: translateY(-22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+  nav { padding: 14px 20px; }
+  .nav-links { display: none; }
+  .support-btn { margin-left: 0; }
+  .updates-timeline::before { display: none; }
+  .update-card { padding-left: 0; }
+  .update-dot { display: none; }
+}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: rgba(99,179,255,0.25); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(99,179,255,0.45); }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="logo-wrap">
+    <div class="logo-icon">⚡</div>
+    <span class="logo-text">Essentiel</span>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#features">Funciones</a></li>
+    <li><a href="#commands">Comandos</a></li>
+    <li><a href="#updates">Actualizaciones</a></li>
+    <li><a href="#support">Soporte</a></li>
+    <li><a href="TU_LINK_INVITACION" class="nav-cta">Invitar Bot ↗</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">Bot en crecimiento constante · v0.3</div>
+  <h1>
+    El bot que<br>
+    <span>lo tiene todo</span>
+  </h1>
+  <p>Moderación avanzada, economía completa y mucho más. Essentiel transforma tu servidor de Discord en algo mayor.</p>
+  <div class="hero-buttons">
+    <a href="TU_LINK_INVITACION" class="btn-primary">⚡ Invitar Bot</a>
+    <a href="https://discord.gg/9UXmYpb9mF" class="btn-secondary">💬 Discord</a>
+  </div>
+  <div class="hero-stats">
+    <div class="stat">
+      <div class="stat-num">20+</div>
+      <div class="stat-label">Comandos</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="stat">
+      <div class="stat-num">0.3</div>
+      <div class="stat-label">Versión actual</div>
+    </div>
+    <div class="hero-divider"></div>
+    <div class="stat">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">Potencial</div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- FEATURES -->
+<section class="section reveal" id="features">
+  <div class="section-label">Funciones</div>
+  <h2 class="section-title">Todo lo que necesita<br>tu servidor</h2>
+  <p class="section-sub">Desde moderar tu comunidad hasta construir una economía entera. Essentiel lo hace posible.</p>
+  <div class="features-grid">
+    <div class="feature-card">
+      <span class="feature-icon">🛡️</span>
+      <h3>Moderación</h3>
+      <p>Warns, bans, kicks, timeouts, purge y mucho más. Mantén el orden total en tu servidor.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">💰</span>
+      <h3>Economía</h3>
+      <p>Sistema completo de monedas, trabajo, tienda, inventario y crimen. Cada acción tiene consecuencias.</p>
+      <span class="feature-badge">Nuevo · v0.3</span>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">📖</span>
+      <h3>Help Interactivo</h3>
+      <p>Panel rediseñado con menú interactivo. Encuentra cualquier comando de forma rápida y clara.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">⚙️</span>
+      <h3>Utilidades</h3>
+      <p>Herramientas del día a día para mantener tu servidor funcional y organizado en todo momento.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🚀</span>
+      <h3>En expansión</h3>
+      <p>Nuevas funciones llegan continuamente. Lo que haces hoy en el servidor… tendrá valor mañana.</p>
+    </div>
+    <div class="feature-card">
+      <span class="feature-icon">🎮</span>
+      <h3>Diversión</h3>
+      <p>Entretenimiento para toda la comunidad. Próximas funciones en desarrollo activo.</p>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- COMMANDS -->
+<section class="section reveal" id="commands">
+  <div class="section-label">Comandos</div>
+  <h2 class="section-title">Arsenal completo</h2>
+  <p class="section-sub">Todos los comandos organizados por categoría. Prefijo: <code style="color:var(--primary);background:rgba(99,179,255,0.1);padding:2px 8px;border-radius:6px;">e!</code></p>
+  <div class="commands-wrapper">
+    <div class="cmd-group">
+      <div class="cmd-group-header">
+        <span class="cmd-group-icon">🛡️</span>
+        <span class="cmd-group-title">Moderación</span>
+      </div>
+      <div class="cmd-list">
+        <span class="cmd-tag">e!warn</span>
+        <span class="cmd-tag">e!warnings</span>
+        <span class="cmd-tag">e!kick</span>
+        <span class="cmd-tag">e!ban</span>
+        <span class="cmd-tag">e!unban</span>
+        <span class="cmd-tag">e!timeout</span>
+        <span class="cmd-tag">e!untimeout</span>
+        <span class="cmd-tag">e!purge</span>
+        <span class="cmd-tag">e!say</span>
+      </div>
+    </div>
+    <div class="cmd-group">
+      <div class="cmd-group-header">
+        <span class="cmd-group-icon">💰</span>
+        <span class="cmd-group-title">Economía</span>
+      </div>
+      <div class="cmd-list">
+        <span class="cmd-tag eco">e!work</span>
+        <span class="cmd-tag eco">e!dep</span>
+        <span class="cmd-tag eco">e!shop</span>
+        <span class="cmd-tag eco">e!inv</span>
+        <span class="cmd-tag eco">e!crime</span>
+        <span class="cmd-tag eco">e!rob</span>
+        <span class="cmd-tag eco">e!with</span>
+        <span class="cmd-tag eco">e!bio</span>
+        <span class="cmd-tag eco">e!use</span>
+        <span class="cmd-tag eco">e!top</span>
+        <span class="cmd-tag eco">e!bal</span>
+      </div>
+    </div>
+    <div class="cmd-group">
+      <div class="cmd-group-header">
+        <span class="cmd-group-icon">⚙️</span>
+        <span class="cmd-group-title">General</span>
+      </div>
+      <div class="cmd-list">
+        <span class="cmd-tag">e!help</span>
+        <span class="cmd-tag">e!ping</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- UPDATES -->
+<section class="section reveal" id="updates">
+  <div class="section-label">Actualizaciones</div>
+  <h2 class="section-title">Historia del bot</h2>
+  <p class="section-sub">Cada versión trae algo nuevo. Esto es solo el comienzo.</p>
+
+  <div class="updates-timeline">
+
+    <!-- v0.3 -->
+    <div class="update-card">
+      <div class="update-dot">✦</div>
+      <div class="update-inner">
+        <div class="update-meta">
+          <span class="update-version">Versión 0.3</span>
+          <span class="update-date">Abril 2026</span>
+        </div>
+        <div class="update-subtitle">🚀 La economía llega</div>
+        <p class="update-desc">Esta actualización cambia completamente la forma en la que usas el bot. Una economía entera está disponible ahora mismo.</p>
+        <div class="update-changes">
+          <div class="update-change"><span class="update-change-icon">💰</span><span><strong>Sistema de economía disponible</strong> — Genera, guarda y usa recursos dentro del servidor.</span></div>
+          <div class="update-change"><span class="update-change-icon">🛠️</span><span><strong>Sistema en expansión</strong> — Esto es solo el inicio, se vienen más cosas.</span></div>
+          <div class="update-change"><span class="update-change-icon">✨</span><span><strong>Ajustes generales</strong> — Corrección de errores y mejoras de rendimiento.</span></div>
+        </div>
+        <div class="update-commands-row">
+          <span class="cmd-tag eco">e!work</span>
+          <span class="cmd-tag eco">e!dep</span>
+          <span class="cmd-tag eco">e!shop</span>
+          <span class="cmd-tag eco">e!inv</span>
+          <span class="cmd-tag eco">e!crime</span>
+          <span class="cmd-tag eco">e!rob</span>
+          <span class="cmd-tag eco">e!with</span>
+          <span class="cmd-tag eco">e!bio</span>
+          <span class="cmd-tag eco">e!use</span>
+          <span class="cmd-tag eco">e!top</span>
+          <span class="cmd-tag eco">e!bal</span>
+        </div>
+        <div class="update-hint">👀 Un consejo… cuidado en quién confías. Todo lo que hagas ahora tendrá impacto.</div>
+      </div>
+    </div>
+
+    <!-- v0.2 -->
+    <div class="update-card">
+      <div class="update-dot">✦</div>
+      <div class="update-inner">
+        <div class="update-meta">
+          <span class="update-version">Versión 0.2</span>
+          <span class="update-date">Marzo 2026</span>
+        </div>
+        <div class="update-subtitle">🚀 Nuevas mejoras</div>
+        <p class="update-desc">Cambios importantes que potenciaron el bot con moderación completa y un nuevo sistema de ayuda.</p>
+        <div class="update-changes">
+          <div class="update-change"><span class="update-change-icon">🛠️</span><span><strong>Sistema de moderación añadido</strong> — Control total sobre tu servidor.</span></div>
+          <div class="update-change"><span class="update-change-icon">📖</span><span><strong>Help completamente rediseñado</strong> — Nuevo panel interactivo con menú y mejor organización.</span></div>
+          <div class="update-change"><span class="update-change-icon">✨</span><span><strong>Mejoras generales</strong> — Optimización y ajustes internos para un mejor rendimiento.</span></div>
+        </div>
+        <div class="update-commands-row">
+          <span class="cmd-tag">e!warn</span>
+          <span class="cmd-tag">e!warnings</span>
+          <span class="cmd-tag">e!kick</span>
+          <span class="cmd-tag">e!ban</span>
+          <span class="cmd-tag">e!unban</span>
+          <span class="cmd-tag">e!timeout</span>
+          <span class="cmd-tag">e!untimeout</span>
+          <span class="cmd-tag">e!purge</span>
+          <span class="cmd-tag">e!say</span>
+        </div>
+        <div class="update-hint">👀 Muy pronto lo que hagas en el servidor empezará a tener valor.</div>
+      </div>
+    </div>
+
+    <!-- v0.1 -->
+    <div class="update-card v01">
+      <div class="update-dot">●</div>
+      <div class="update-inner">
+        <div class="update-meta">
+          <span class="update-version">Versión 0.1</span>
+          <span class="update-date">Marzo 2026</span>
+        </div>
+        <div class="update-subtitle">🌱 Lanzamiento inicial</div>
+        <p class="update-desc">El inicio de todo. Essentiel entra al mundo con sus primeras funciones base.</p>
+        <div class="update-commands-row">
+          <span class="cmd-tag">e!help</span>
+          <span class="cmd-tag">e!ping</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- coming soon -->
+    <div class="update-card coming">
+      <div class="update-dot">?</div>
+      <div class="update-inner">
+        <div class="update-meta">
+          <span class="update-version">Próximamente</span>
+          <span class="update-date">En desarrollo</span>
+        </div>
+        <div class="update-subtitle">👀 Atentos…</div>
+        <p class="update-desc">Nuevas funciones, más comandos y sorpresas en camino. Seguimos trabajando. Esto solo es el comienzo.</p>
+        <div class="update-hint">📌 Lo que construyas hoy en el servidor… mañana tendrá peso.</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<div class="sep"></div>
+
+<!-- SUPPORT -->
+<section class="section reveal" id="support">
+  <div class="section-label">Soporte</div>
+  <h2 class="section-title">¿Necesitas ayuda?</h2>
+  <p class="section-sub" style="margin-bottom:28px;">Únete a nuestra comunidad en Discord para soporte, sugerencias y todas las novedades.</p>
+  <div class="support-card">
+    <span class="support-icon">💬</span>
+    <div class="support-content">
+      <h3>Servidor de Discord</h3>
+      <p>Soporte directo de los desarrolladores, reporta bugs, sugiere funciones y sé el primero en enterarte de todo.</p>
+    </div>
+    <a href="https://discord.gg/9UXmYpb9mF" class="support-btn">
+      <svg width="22" height="22" viewBox="0 0 71 55" fill="none"><path d="M60.1 4.9C55.5 2.8 50.7 1.3 45.7.5c-.7 1.2-1.3 2.5-1.8 3.8-5.3-.8-10.6-.8-15.8 0-.5-1.3-1.1-2.6-1.9-3.8-5 .8-9.8 2.3-14.4 4.4C1.8 18.2-.9 31.1.3 43.8c5.5 4.1 11.7 7.2 18.2 9.1 1.5-2 2.8-4.2 3.9-6.4-2.1-.8-4.1-1.8-6-3 .5-.4 1-.7 1.5-1.1 11.3 5.3 24.5 5.3 35.8 0 .5.4 1 .8 1.5 1.1-1.9 1.2-3.9 2.2-6 3 1.1 2.2 2.4 4.4 3.9 6.4 6.6-1.9 12.7-5 18.2-9.1C72.5 29 69.1 16 60.1 4.9zM23.7 36.4c-3.2 0-5.8-3-5.8-6.6s2.5-6.6 5.8-6.6c3.2 0 5.8 3 5.8 6.6s-2.6 6.6-5.8 6.6zm23.5 0c-3.2 0-5.8-3-5.8-6.6s2.5-6.6 5.8-6.6c3.2 0 5.8 3 5.8 6.6s-2.5 6.6-5.8 6.6z" fill="#fff"/></svg>
+      Entrar al servidor
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Essentiel</div>
+  <div class="footer-links">
+    <a href="#features">Funciones</a>
+    <a href="#commands">Comandos</a>
+    <a href="#updates">Actualizaciones</a>
+    <a href="https://discord.gg/9UXmYpb9mF">Discord</a>
+  </div>
+  <p class="footer-copy">© 2026 Essentiel Bot · Hecho con ❤️ por Edward &amp; Suan</p>
+</footer>
+
+<script>
+/* ── STARS ── */
+const canvas = document.getElementById('stars');
+const ctx = canvas.getContext('2d');
+let stars = [];
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initStars() {
+  stars = [];
+  for (let i = 0; i < 160; i++) {
+    stars.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      r: Math.random() * 1.3 + 0.2,
+      a: Math.random(),
+      speed: Math.random() * 0.4 + 0.1,
+      dir: Math.random() > 0.5 ? 1 : -1
+    });
+  }
+}
+
+function drawStars() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    s.a += s.speed * 0.008 * s.dir;
+    if (s.a > 1 || s.a < 0) s.dir *= -1;
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(200,220,255,${s.a})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(drawStars);
+}
+
+resize();
+initStars();
+drawStars();
+window.addEventListener('resize', () => { resize(); initStars(); });
+
+/* ── SCROLL REVEAL ── */
+const reveals = document.querySelectorAll('.reveal');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('visible');
+      observer.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+reveals.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
